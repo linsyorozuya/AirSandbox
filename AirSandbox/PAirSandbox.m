@@ -295,7 +295,6 @@ typedef enum : NSUInteger {
         _window.windowLevel = UIWindowLevelStatusBar;
         
         _ctrl = [ASViewController new];
-        _ctrl.view.frame = CGRectMake(0, 0, _window.frame.size.width, _window.frame.size.height);
         _window.rootViewController = _ctrl;
     }
     _window.hidden = false;
