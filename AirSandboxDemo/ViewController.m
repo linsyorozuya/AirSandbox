@@ -17,6 +17,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
+    NSString* dicPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Caches/dic.plist"];
+    [@{@"date":@"2017"} writeToFile:dicPath atomically:YES];
+
 }
 
 
