@@ -71,7 +71,7 @@ typedef enum : NSUInteger {
 @interface ASViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 @property (nonatomic, strong) UITableView*                 tableView;
 @property (nonatomic,strong)  UIButton*                    btnClose;
-@property (nonatomic, strong) NSArray*                     items;
+@property (nonatomic, strong) NSMutableArray*              items;
 @property (nonatomic, copy) NSString*                      rootPath;
 @end
 
@@ -116,7 +116,7 @@ typedef enum : NSUInteger {
     _tableView.delegate = self;
     _tableView.dataSource = self;
     
-    _items = @[];
+    _items = [@[] mutableCopy];
     _rootPath = NSHomeDirectory();
 }
 
@@ -170,7 +170,7 @@ typedef enum : NSUInteger {
         [files addObject:file];
         
     }
-    _items = files.copy;
+    _items = files;
     [_tableView reloadData];
 }
 
@@ -198,6 +198,12 @@ typedef enum : NSUInteger {
     return cell;
 }
 
+- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return @"删除";
+}
+
+
 #pragma mark- UITableViewDataSource
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -222,6 +228,27 @@ typedef enum : NSUInteger {
     else if(item.type == ASFileItemDirectory) {
         [self loadPath:item.path];
     }
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    ASFileItem* item = [_items objectAtIndex:indexPath.row];
+    return item.type == ASFileItemFile;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // 从数据源中删除
+    ASFileItem* item = [_items objectAtIndex:indexPath.row];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:item.path]) {
+        // 删除沙盒中的资源
+        [fileManager removeItemAtPath:item.path error:nil];
+        [_items removeObject:item];
+    }
+    
+    // 从列表中删除
+    [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 - (void)sharePath:(NSString*)path
